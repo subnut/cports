@@ -1,0 +1,33 @@
+--- druntime/src/core/sys/linux/execinfo.d
++++ druntime/src/core/sys/linux/execinfo.d
+@@ -7,7 +7,7 @@
+  */
+ module core.sys.linux.execinfo;
+ 
+-version (linux):
++version (none):
+ extern (C):
+ nothrow:
+ 
+--- druntime/src/rt/backtrace/dwarf.d
++++ druntime/src/rt/backtrace/dwarf.d
+@@ -15,7 +15,7 @@ module rt.backtrace.dwarf;
+ version(CRuntime_Glibc) version = linux_or_freebsd;
+ else version(FreeBSD) version = linux_or_freebsd;
+ 
+-version(linux_or_freebsd):
++version(none):
+ 
+ import rt.util.container.array;
+ import rt.backtrace.elf;
+
+--- druntime/src/core/sys/posix/config.d
++++ druntime/src/core/sys/posix/config.d
+@@ -40,7 +40,7 @@
+     enum _REENTRANT          = true; // set by compiler when linking -pthread
+ 
+     // deduced <features.h>
+-    enum __USE_FILE_OFFSET64 = _FILE_OFFSET_BITS == 64;
++    enum __USE_FILE_OFFSET64 = false;
+     enum __USE_LARGEFILE     = __USE_FILE_OFFSET64 && !__REDIRECT;
+     enum __USE_LARGEFILE64   = __USE_FILE_OFFSET64 && !__REDIRECT;

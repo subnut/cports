@@ -1,0 +1,35 @@
+Makes it a tiny bit easier to copy the resulting files
+
+--- dmd/src/posix.mak
++++ dmd/src/posix.mak
+@@ -530,9 +530,9 @@
+ 
+ install: all
+ 	$(eval bin_dir=$(if $(filter $(OS),osx), bin, bin$(MODEL)))
+-	mkdir -p $(INSTALL_DIR)/$(OS)/$(bin_dir)
+-	cp dmd $(INSTALL_DIR)/$(OS)/$(bin_dir)/dmd
+-	cp ../ini/$(OS)/$(bin_dir)/dmd.conf $(INSTALL_DIR)/$(OS)/$(bin_dir)/dmd.conf
++	mkdir -p $(INSTALL_DIR)/bin
++	cp dmd $(INSTALL_DIR)/bin/dmd
++	cp ../ini/$(OS)/$(bin_dir)/dmd.conf $(INSTALL_DIR)/bin/dmd.conf
+ 	cp backendlicense.txt $(INSTALL_DIR)/dmd-backendlicense.txt
+ 	cp boostlicense.txt $(INSTALL_DIR)/dmd-boostlicense.txt
+ 
+--- phobos/posix.mak
++++ phobos/posix.mak
+@@ -441,11 +441,11 @@
+ 
+ install2 : all
+ 	$(eval lib_dir=$(if $(filter $(OS),osx), lib, lib$(MODEL)))
+-	mkdir -p $(INSTALL_DIR)/$(OS)/$(lib_dir)
+-	cp $(LIB) $(INSTALL_DIR)/$(OS)/$(lib_dir)/
++	mkdir -p $(LIBDIR)
++	cp $(LIB) $(LIBDIR)/
+ ifeq (1,$(SHARED))
+-	cp -P $(LIBSO) $(INSTALL_DIR)/$(OS)/$(lib_dir)/
+-	ln -sf $(notdir $(LIBSO)) $(INSTALL_DIR)/$(OS)/$(lib_dir)/libphobos2.so
++	cp -P $(LIBSO) $(LIBDIR)/
++	ln -sf $(notdir $(LIBSO)) $(LIBDIR)/libphobos2.so
+ endif
+ 	mkdir -p $(INSTALL_DIR)/src/phobos/etc
+ 	mkdir -p $(INSTALL_DIR)/src/phobos/std
