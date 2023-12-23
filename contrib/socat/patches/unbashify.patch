@@ -1,0 +1,276 @@
+--- a/socat-broker.sh
++++ b/socat-broker.sh
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env bash
++#!/bin/sh
+ # Copyright Gerhard Rieger and contributors (see file CHANGES)
+ # Published under the GNU General Public License V.2, see file COPYING
+ 
+@@ -14,7 +14,7 @@
+ #   socat-broker.sh SSL-L:1234,cert=server.pem,cafile=clients.crt
+ # Now connect with an arbitrary number of clients like SSL:<server>:1234,cafile=server.cert=clients.pem
+ 
+-ECHO="echo -e"
++ECHO="echo"
+ 
+ usage () {
+     $ECHO "Usage: $0 <options> <listener>"
+@@ -54,13 +54,12 @@
+     exit 1
+ fi
+ 
+-shopt -s nocasematch
+-if ! [[ "$LISTENER" =~ .*,fork ]] || [[ "$LISTENER" =~ .*,fork, ]]; then
++if ! echo "$LISTENER" | grep -qi ".*,fork" || echo "$LISTENER" | grep -qi ".*,fork,"; then
+     LISTENER="$LISTENER,fork"
+ fi
+ 
+ case "$0" in
+-    */*) SOCAT=${0%/*}/socat ;;
++    */*) SOCAT="${0%/*}/socat" ;;
+     *) SOCAT=socat ;;
+ esac
+ 
+@@ -73,7 +72,7 @@
+ BCADDR=127.255.255.255
+ 
+ if [ "$VERBOSE" ]; then
+-    echo -e "$SOCAT -lp socat-broker $OPTS \\
++    echo "$SOCAT -lp socat-broker $OPTS \\
+ 	$LISTENER \
+ 	UDP4-DATAGRAM:$BCADDR:$PORT,bind=:$PORT,so-broadcast,so-reuseaddr"
+ fi	
+--- a/socat-mux.sh
++++ b/socat-mux.sh
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env bash
++#!/bin/sh
+ # Copyright Gerhard Rieger and contributors (see file CHANGES)
+ # Published under the GNU General Public License V.2, see file COPYING
+ 
+@@ -18,21 +18,22 @@
+ # data sent by the device goes to all clients, data from any client is sent to
+ # the device.
+ 
+-ECHO="echo -e"
++ECHO="echo"
++printfln() { printf "$1\n"; }
+ 
+ usage () {
+-    $ECHO "Usage: $0 <options> <listener> <target>"
+-    $ECHO "Example:"
+-    $ECHO "    $0 TCP4-L:1234,reuseaddr,fork TCP:10.2.3.4:12345"
+-    $ECHO "Clients may connect to port 1234; data sent by any client is forwarded to 10.2.3.4,"
+-    $ECHO "data provided by 10.2.3.4 is sent to ALL clients"
+-    $ECHO "    <options>:"
+-    $ECHO "\t-h\tShow this help text and exit"
+-    $ECHO "\t-V\tShow Socat commands"
+-    $ECHO "\t-q\tSuppress most messages"
+-    $ECHO "\t-d*\tOptions beginning with -d are passed to Socat processes"
+-    $ECHO "\t-l*\tOptions beginning with -l are passed to Socat processes"
+-    $ECHO "\t-b|-S|-t|-T|-l <arg>\tThese options are passed to Socat processes"
++    printfln "Usage: $0 <options> <listener> <target>"
++    printfln "Example:"
++    printfln "    $0 TCP4-L:1234,reuseaddr,fork TCP:10.2.3.4:12345"
++    printfln "Clients may connect to port 1234; data sent by any client is forwarded to 10.2.3.4,"
++    printfln "data provided by 10.2.3.4 is sent to ALL clients"
++    printfln "    <options>:"
++    printfln "\t-h\tShow this help text and exit"
++    printfln "\t-V\tShow Socat commands"
++    printfln "\t-q\tSuppress most messages"
++    printfln "\t-d*\tOptions beginning with -d are passed to Socat processes"
++    printfln "\t-l*\tOptions beginning with -l are passed to Socat processes"
++    printfln "\t-b|-S|-t|-T|-l <arg>\tThese options are passed to Socat processes"
+ }
+ 
+ VERBOSE= QUIET= OPTS=
+@@ -61,24 +62,23 @@
+     exit 1
+ fi
+ 
+-shopt -s nocasematch
+-if ! [[ "$LISTENER" =~ .*,fork ]] || [[ "$LISTENER" =~ .*,fork, ]]; then
++if ! echo "$LISTENER" | grep -qi ".*,fork" || echo "$LISTENER" | grep -qi ".*,fork,"; then
+     LISTENER="$LISTENER,fork"
+ fi
+ 
+ case "$0" in
+-    */*) SOCAT=${0%/*}/socat ;;
++    */*) SOCAT="${0%/*}/socat" ;;
+     *) SOCAT=socat ;;
+ esac
+ 
+ PORT1=$($SOCAT -d -d -T 0.000001 UDP4-RECV:0 /dev/null 2>&1 |grep bound |sed 's/.*:\([1-9][0-9]*\)$/\1/')
+ PORT2=$($SOCAT -d -d -T 0.000001 UDP4-RECV:0 /dev/null 2>&1 |grep bound |sed 's/.*:\([1-9][0-9]*\)$/\1/')
+-if [ -z "$PORT1" -o -z "$PORT2" ]; then
++if [ -z "$PORT1" ] || [ -z "$PORT2" ]; then
+     echo "$0: Failed to determine free UDP ports" >&2
+     exit 1
+ fi
+ if [ "$PORT1" = "$PORT2" ]; then 	# seen on etch
+-    PORT2=$((PORT1+1))
++    PORT2=$(( $PORT1 + 1 ))
+ fi
+ 
+ IFADDR=127.0.0.1
+--- a/socat-chain.sh
++++ b/socat-chain.sh
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env bash
++#!/bin/sh
+ # Copyright Gerhard Rieger and contributors (see file CHANGES)
+ # Published under the GNU General Public License V.2, see file COPYING
+ 
+@@ -43,7 +43,7 @@
+ #   socat addr2:RANDOM addr3 &
+ #   socat addr1 TCP:localhost:RANDOM
+ 
+-ECHO="echo -e"
++ECHO="echo"
+ 
+ usage () {
+     $ECHO "Usage: $0 <options> <address1> <address2> <address3>"
+@@ -99,16 +99,16 @@
+ 
+ mkprogname () {
+     ARG="$1"
+-    if [[ "$ARG" =~ .*[:].* ]]; then
++    if echo "$ARG" | grep -qEi ".*[:].*"; then
+ 	NAME="${ARG%%:*}"
+-    elif [[ "$ARG" =~ .*[,].* ]]; then
++    elif echo "$ARG" | grep -qEi ".*[,].*"; then
+ 	NAME="${ARG%%,*}"
+     elif [ "X$ARG" = X- ]; then
+ 	NAME=stdio
+     else
+ 	NAME="$ARG"
+     fi
+-    NAME="${NAME,,*}"
++    NAME="$(echo $NAME | tr A-Z a-z)"
+     echo $NAME
+ }
+ 
+@@ -121,7 +121,7 @@
+ esac
+ 
+ # Split middle address for insertion of additional parts
+-if [[ "$ARG1" =~ .*,.* ]]; then
++if echo "$ARG1" | grep -qi ".*,.*"; then
+     ARG1A="${ARG1%%,*}"
+     ARG1B="${ARG1#*,}"
+ else
+@@ -130,7 +130,7 @@
+ fi
+ 
+ case "$0" in
+-    */*) SOCAT=${0%/*}/socat ;;
++    */*) SOCAT="${0%/*}/socat" ;;
+     *) SOCAT=socat ;;
+ esac
+ 
+@@ -141,74 +141,72 @@
+ fi
+ 
+ PASSIVE= 	# is the second address passive/listening/server?
+-case "${ARG1A^^*}" in
++case "$(echo ${ARG1A} | tr a-z A-Z)" in
+     OPENSSL|OPENSSL:*|SSL|SSL:.*)
+ 	OPTS1A=
+-	#if [[ $ARG1A =~ ^\([^:]*\):\([^:]*\):\([^,]*\)\(.*\) ]]; then 	# bash 3
+-	if [[ $ARG1A =~ ^([^:]*):([^:]*):([^,]*)(.*) ]]; then
+-	    OPTS1A="${BASH_REMATCH[4]}"
+-	#elif [[ $ARG1A =~ ^\([^,]*\)\(.*\) ]]; then 			# bash 3
+-	elif [[ $ARG1A =~ ^([^,]*)(.*) ]]; then
+-	    OPTS1A="${BASH_REMATCH[2]}"
++	if echo $ARG1A | grep -qEi "^([^:]*):([^:]*):([^,]*)(.*)"; then
++	    OPTS1A="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^,]*)(.*)/\4/")"
++	    PROG1="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^,]*)(.*)/\1/")"
++	    NAME1=$(mkprogname "$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^,]*)(.*)/\1/")")
++	elif echo $ARG1A | grep -qEi "^([^,]*)(.*)"; then
++	    OPTS1A="$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\2/")"
++	    PROG1="$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\1/")"
++	    NAME1=$(mkprogname "$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\1/")")
+ 	else
+ 	    echo "$0: \"$ARG1A\": invalid arguments" >&2
+ 	    exit 1
+ 	fi
+-	PROG1="${BASH_REMATCH[1]}"
+-	NAME1=$(mkprogname "${BASH_REMATCH[1]}")
+ 	NAME2=$(mkprogname "$ARG2")
+ 	ARG1A=$PROG1:$LOCALHOST:$PORT$OPTS1A ;;
+     PROXY-CONNECT:*|PROXY:*)
+-	#if ! [[ $ARG1A =~ ^\([^:]*\):\([^:]*\):\([^:]*\):\([^,]*\)\(.*\) ]]; then 	# bash 3
+-	if ! [[ $ARG1A =~ ^([^:]*):([^:]*):([^:]*):([^,]*)(.*) ]]; then
++	if ! echo $ARG1A | grep -qEi "^([^:]*):([^:]*):([^:]*):([^,]*)(.*)"; then
+ 	    echo "$0: \"$ARG1A\": invalid arguments" >&2
+ 	    exit 1
+ 	fi
+ 	#echo "0:\"${BASH_REMATCH[0]}\" 1:\"${BASH_REMATCH[1]}\" 2:\"${BASH_REMATCH[2]}\" 3:\"${BASH_REMATCH[3]}\" 4:\"${BASH_REMATCH[4]}\""
+-	PROG1="${BASH_REMATCH[1]}"
+-	NAME1=$(mkprogname "${PROG1,,*}")
++	PROG1="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^,]*)(.*)/\1/")"
++	NAME1=$(mkprogname "$(echo $PROG1 | tr A-Z a-z)")
+ 	NAME2=$(mkprogname "$ARG2")
+-	OPTS1A="${BASH_REMATCH[5]}"
+-	ARG1A="$PROG1:$LOCALHOST:${BASH_REMATCH[3]}:${BASH_REMATCH[4]},proxyport=$PORT,$OPTS1A" ;;
++	OPTS1A="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^,]*)(.*)/\5/")"
++	ARG1A="$PROG1:$LOCALHOST:$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^,]*)(.*)/\3:\4/"),proxyport=$PORT,$OPTS1A" ;;
+     SOCKS:*|SOCKS4:*|SOCKS4A*)
+-	#if ! [[ $ARG1A =~ ^\([^:]*\):\([^:]*\):\([^:]*\):\([^:,]*\),* ]]; then 	# bash 3
+-	if ! [[ $ARG1A =~ ^([^:]*):([^:]*):([^:]*):([^:,]*),* ]]; then
++	#if ! echo $ARG1A | grep -qEi "^\([^:]*\):\([^:]*\):\([^:]*\):\([^:,]*\),*"; then 	# bash 3
++	if ! echo $ARG1A | grep -qEi "^([^:]*):([^:]*):([^:]*):([^:,]*),*"; then
+ 	    echo "$0: \"$ARG1A\": invalid arguments" >&2
+ 	    exit 1
+ 	fi
+-	PROG1="${BASH_REMATCH[1]}"
++	PROG1="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*),*/\1/")"
+ 	NAME1=$(mkprogname "${PROG1,,*}")
+ 	NAME2=$(mkprogname "$ARG2")
+-	OPTS1A="${BASH_REMATCH[5]}"
+-	ARG1A="$PROG1:$LOCALHOST:${BASH_REMATCH[3]}:${BASH_REMATCH[4]},socksport=$PORT,$OPTS1A" ;;
++	OPTS1A="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*),*/\5/")"
++	ARG1A="$PROG1:$LOCALHOST:$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*),*/\3:\4/"),socksport=$PORT,$OPTS1A" ;;
+     SOCKS5:*|SOCKS5-CONNECT*)
+-	#if ! [[ $ARG1A =~ ^\([^:]*\):\([^:]*\):\([^:]*\):\([^:,]*\):\([^:,]*\),* ]]; then 	# bash 3
+-	if ! [[ $ARG1A =~ ^([^:]*):([^:]*):([^:]*):([^:,]*):([^:,]*),* ]]; then
++	if ! echo $ARG1A | grep -qEi "^([^:]*):([^:]*):([^:]*):([^:,]*):([^:,]*),*"; then
+ 	    echo "$0: \"$ARG1A\": invalid arguments" >&2
+ 	    exit 1
+ 	fi
+-	PROG1="${BASH_REMATCH[1]}"
++	PROG1="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*):([^:,]*),*/\1/")"
+ 	NAME1=$(mkprogname "${PROG1,,*}")
+ 	NAME2=$(mkprogname "$ARG2")
+-	OPTS1A="${BASH_REMATCH[6]}"
+-	ARG1A="$PROG1:$LOCALHOST:$PORT:${BASH_REMATCH[4]}:${BASH_REMATCH[5]},$OPTS1A" ;;
++	OPTS1A="$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*):([^:,]*),*/\6/")"
++	ARG1A="$PROG1:$LOCALHOST:$PORT:$(echo $ARG1A | sed -E "s/^([^:]*):([^:]*):([^:]*):([^:,]*):([^:,]*),*/\4:\5/"),$OPTS1A" ;;
+     # Passive (server) addresses
+     OPENSSL-LISTEN|OPENSSL-LISTEN:*|SSL-L|SSL-L:.*)
+ 	PASSIVE=1
+ 	OPTS1A=
+-	#if [[ $ARG1A =~ ^\([^:]*\):\([^,]*\)\(.*\) ]]; then 	# bash 3
+-	if [[ $ARG1A =~ ^([^:]*):([^,]*)(.*) ]]; then
+-	    OPTS1A="${BASH_REMATCH[3]}"
+-	#elif [[ $ARG1A =~ ^\([^,]*\)\(.*\) ]]; then 		# bash 3
+-	elif [[ $ARG1A =~ ^([^,]*)(.*) ]]; then
+-	    OPTS1A="${BASH_REMATCH[2]}"
++	if echo $ARG1A | grep -qEi "^([^:]*):([^,]*)(.*)"; then
++	    OPTS1A="$(echo $ARG1A | sed -E "s/^([^:]*):([^,]*)(.*)/\3/")"
++	    PROG1="$(echo $ARG1A | sed -E "s/^([^:]*):([^,]*)(.*)/\1/")"
++	    NAME2=$(mkprogname "$(echo $ARG1A | sed -E "s/^([^:]*):([^,]*)(.*)/\1/")")
++	elif echo $ARG1A | grep -qEi "^([^,]*)(.*)"; then
++	    OPTS1A="$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\2/")"
++	    PROG1="$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\1/")"
++	    NAME2=$(mkprogname "$(echo $ARG1A | sed -E "s/^([^,]*)(.*)/\1/")")
+ 	else
+ 	    echo "$0: \"$ARG1A\": invalid arguments" >&2
+ 	    exit 1
+ 	fi
+-	PROG1="${BASH_REMATCH[1]}"
+ 	NAME1=$(mkprogname "$ARG0")
+-	NAME2=$(mkprogname "${BASH_REMATCH[1]}")
+ 	ARG1A=$PROG1:$PORT$OPTS1A ;;
+     *) echo "$0: Unsupported address \"$ARG1A\"" >&2
+        usage >&2

@@ -1,0 +1,31 @@
+Chimera uses FreeBSD coreutils
+
+--- a/test.sh
++++ b/test.sh
+@@ -390,24 +390,10 @@
+ fi
+ 
+ # need output like "644"
+-case "$UNAME" in
+-    Linux) fileperms() { stat -L --print "%a\n" "$1" 2>/dev/null; } ;;
+-    FreeBSD) fileperms() { stat -L -x "$1" |grep ' Mode:' |sed 's/.* Mode:[[:space:]]*([0-9]\([0-7][0-7][0-7]\).*/\1/'; } ;;
+-    *) fileperms() {
+-	    local p s=0 c
+-	    p="$(ls -l -L "$1" |awk '{print($1);}')"
+-	    p="${p:1:9}"
+-	    while [ "$p" ]; do c=${p:0:1}; p=${p:1}; [ "x$c" == x- ]; let "s=2*s+$?"; done
+-	    printf "%03o\n" $s;
+-	} ;;
+-esac
++fileperms() { stat -L -x "$1" |grep ' Mode:' |sed 's/.* Mode:[[:space:]]*([0-9]\([0-7][0-7][0-7]\).*/\1/'; }
+ 
+ # need user (owner) of filesystem entry
+-case "$UNAME" in
+-    Linux) fileuser() { stat -L --print "%U\n" "$1" 2>/dev/null; } ;;
+-    FreeBSD) fileuser() { ls -l "$1" |awk '{print($3);}'; } ;;
+-    *) fileuser() { ls -l "$1" |awk '{print($3);}'; } ;;
+-esac
++fileuser() { ls -l "$1" |awk '{print($3);}'; }
+ 
+ if2addr4() {
+     local IF="$1"
