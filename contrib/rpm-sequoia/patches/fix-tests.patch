@@ -1,0 +1,20 @@
+diff --git a/tests/symbols.rs b/tests/symbols.rs.new
+index 9375619d1..81c5fd41b 100644
+--- a/tests/symbols.rs
++++ b/tests/symbols.rs
+@@ -1,4 +1,5 @@
+ use std::env;
++use std::fmt;
+ use std::fs::File;
+ use std::io::Read;
+ use std::path::PathBuf;
+@@ -18,7 +19,8 @@
+     let mut build_dir = out_dir;
+     let lib = loop {
+         let mut lib = build_dir.clone();
+-        lib.push("librpm_sequoia.so");
++        lib.push("release");
++        lib.push(format!("librpm_sequoia.so.{}", env!("CARGO_PKG_VERSION_MAJOR")));
+         if lib.exists() {
+             break lib;
+         }

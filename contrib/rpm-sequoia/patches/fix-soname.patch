@@ -1,0 +1,50 @@
+--- a/build.rs
++++ b/build.rs
+@@ -94,6 +94,9 @@
+     } else {
+         build_dir.push("target");
+     }
++    if let Some(triplet) = env::var_os("CARGO_BUILD_TARGET") {
++        build_dir.push(triplet);
++    }
+     let profile = env::var_os("PROFILE").expect("PROFILE not set");
+     build_dir.push(&profile);
+ 
+@@ -156,28 +159,8 @@
+ 
+ 
+     // Set the soname.
+-    let arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+-    let os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+-    let env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
+-
+-    // We do not care about `_pre` and such.
+     let major = env::var("CARGO_PKG_VERSION_MAJOR").unwrap();
+-    let minor = env::var("CARGO_PKG_VERSION_MINOR").unwrap();
+-    let patch = env::var("CARGO_PKG_VERSION_PATCH").unwrap();
+-
+-    // libdir might contain "${prefix}". Replace it with
+-    // the actual prefix value if found.
+-    let libdir_resolved = libdir.replace("${prefix}", prefix);
+-
+-    let linker_lines = cdylib_link_lines::shared_object_link_args(
+-        "rpm_sequoia",
+-        &major, &minor, &patch, &arch, &os, &env,
+-        PathBuf::from(libdir_resolved), build_dir.clone(),
+-    );
+-
+-    for line in linker_lines {
+-        println!("cargo:rustc-cdylib-link-arg={}", line);
+-    }
++    println!("cargo:rustc-cdylib-link-arg=-Wl,-soname,librpm_sequoia.so.{}", major);
+ 
+     #[cfg(unix)]
+     {
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -29,5 +29,4 @@
+ [build-dependencies]
+ anyhow = "1"
+-cdylib-link-lines = "0.1.4"
+ 
+ [dev-dependencies]

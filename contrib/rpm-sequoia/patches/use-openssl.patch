@@ -1,0 +1,11 @@
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -43,7 +43,7 @@ crate-type = ["cdylib"]
+ 
+ # We explicitly do not want to enable Sequoia's decompression support.
+ # Hence we only select a crypto backend.
+-default = ["crypto-nettle"]
++default = ["crypto-openssl"]
+ crypto-nettle = ["sequoia-openpgp/crypto-nettle"]
+ crypto-rust = ["sequoia-openpgp/crypto-rust"]
+ crypto-cng = ["sequoia-openpgp/crypto-cng"]
