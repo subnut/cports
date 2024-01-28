@@ -1,0 +1,12 @@
+diff --git a/tests/CMakeLists.txt b/tests/CMakeLists.txt.new
+index a6afbc0ae..27c92ae21 100644
+--- a/tests/CMakeLists.txt
++++ b/tests/CMakeLists.txt
+@@ -14,7 +14,6 @@ function(os_release var key)
+ endfunction()
+ 
+ os_release(OS_NAME ID)
+-os_release(OS_VERSION VERSION_ID)
+ 
+ set(PYTHON ${Python3_EXECUTABLE})
+ if (WITH_INTERNAL_OPENPGP)
