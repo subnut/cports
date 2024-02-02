@@ -1,0 +1,28 @@
+Only use the paths used by standard lua5.1
+
+--- a/src/luaconf.h
++++ b/src/luaconf.h
+@@ -43,8 +43,10 @@
+ #define LUA_JROOT	LUA_ROOT
+ #define LUA_RLDIR	LUA_ROOT "/share" LUA_LUADIR
+ #define LUA_RCDIR	LUA_ROOT "/" LUA_MULTILIB LUA_LUADIR
+-#define LUA_RLPATH	";" LUA_RLDIR "?.lua;" LUA_RLDIR "?/init.lua"
+-#define LUA_RCPATH	";" LUA_RCDIR "?.so"
++#define LUA_RLPATH1	";" LUA_RLDIR "?.lua;" LUA_RLDIR "?/init.lua"
++#define LUA_RLPATH2	";" LUA_RCDIR "?.lua;" LUA_RCDIR "?/init.lua"
++#define LUA_RCPATH1	";" LUA_RCDIR "?.so"
++#define LUA_RCPATH2	";" LUA_RCDIR "loadall.so"
+ #else
+ #define LUA_JROOT	LUA_LROOT
+ #define LUA_RLPATH
+@@ -58,8 +60,8 @@
+ #define LUA_LCPATH1	";" LUA_LCDIR "?.so"
+ #define LUA_LCPATH2	";" LUA_LCDIR "loadall.so"
+ 
+-#define LUA_PATH_DEFAULT	"./?.lua" LUA_JPATH LUA_LLPATH LUA_RLPATH
+-#define LUA_CPATH_DEFAULT	"./?.so" LUA_LCPATH1 LUA_RCPATH LUA_LCPATH2
++#define LUA_PATH_DEFAULT	"./?.lua" LUA_JPATH LUA_RLPATH1 LUA_RLPATH2
++#define LUA_CPATH_DEFAULT	"./?.so" LUA_RCPATH1 LUA_RCPATH2
+ #endif
+ 
+ /* Environment variable names for path overrides and initialization code. */
