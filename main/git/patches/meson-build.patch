@@ -1,0 +1,51 @@
+--- git-2.49.0/meson.build
++++ git-2.49.0/meson.build
+@@ -666,7 +666,7 @@
+ build_options_config.set('GIT_PERF_REPO', '')
+ build_options_config.set('GIT_TEST_CMP_USE_COPIED_CONTEXT', '')
+ build_options_config.set('GIT_TEST_INDEX_VERSION', '')
+-build_options_config.set('GIT_TEST_OPTS', '')
++build_options_config.set('GIT_TEST_OPTS', '--verbose')
+ build_options_config.set('GIT_TEST_PERL_FATAL_WARNINGS', '')
+ build_options_config.set_quoted('GIT_TEST_UTF8_LOCALE', get_option('test_utf8_locale'))
+ build_options_config.set_quoted('LOCALEDIR', fs.as_posix(get_option('prefix') / get_option('localedir')))
+@@ -1830,9 +1830,9 @@
+     output: 'GIT-PERL-HEADER',
+     configuration: {
+       'GITEXECDIR_REL': get_option('libexecdir') / 'git-core',
+-      'PERLLIBDIR_REL': get_option('datadir') / 'perl5',
+-      'LOCALEDIR_REL': get_option('datadir') / 'locale',
+-      'INSTLIBDIR': get_option('datadir') / 'perl5',
++      'PERLLIBDIR_REL': get_option('datadir') / 'perl5/vendor_perl',
++      'LOCALEDIR_REL': get_option('datadir') / get_option('localedir'),
++      'INSTLIBDIR': get_option('datadir') / 'perl5/vendor_perl',
+       'PATHSEP': pathsep,
+     },
+   )
+@@ -1965,6 +1965,7 @@
+ endif
+ 
+ subdir('contrib')
++subdir('gitk-git')
+ 
+ foreach key, value : {
+   'DIFF': diff.full_path(),
+--- git-2.49.0/gitk-git/meson.build
++++ git-2.49.0/gitk-git/meson.build
+@@ -1,5 +1,3 @@
+-project('gitk')
+-
+ shell = find_program('sh')
+ wish = find_program('wish')
+ 
+--- git-2.49.0/perl/meson.build
++++ git-2.49.0/perl/meson.build
+@@ -3,7 +3,7 @@
+   output: 'Git.pm',
+   command: generate_perl_command,
+   install: true,
+-  install_dir: get_option('datadir') / 'perl5',
++  install_dir: get_option('datadir') / 'perl5/vendor_perl',
+   depends: [git_version_file],
+ )
+ 
