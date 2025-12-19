@@ -1,11 +1,12 @@
 # nb: neovim requires either lua5.1 or luaJIT (a mess)
 pkgname = "neovim"
 pkgver = "0.11.5"
-pkgrel = 0
+pkgrel = 1
 build_style = "cmake"
 configure_args = [
     "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
     "-DENABLE_TRANSLATIONS=ON",
+    "-DENABLE_WASMTIME=ON",
 ]
 hostmakedepends = [
     "cmake",
@@ -24,6 +25,7 @@ makedepends = [
     "tree-sitter-devel",
     "unibilium-devel",
     "utf8proc-devel",
+    "wasmtime-devel",
 ]
 depends = [
     "lua5.1-lpeg",

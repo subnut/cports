@@ -1,10 +1,11 @@
 pkgname = "wasmtime"
-pkgver = "31.0.0"
+pkgver = "33.0.2"
 pkgrel = 0
-# no implementation for other architectures
-archs = ["aarch64", "riscv64", "x86_64"]
 build_style = "cargo"
+make_build_args = ["--features=all-arch"]
+make_install_args = [*make_build_args]
 make_check_args = [
+    *make_build_args,
     "--",
     # who knows
     "--skip=custom_limiter_detect_os_oom_failure",
@@ -24,7 +25,7 @@ pkgdesc = "Runtime for webassembly"
 license = "Apache-2.0"
 url = "https://wasmtime.dev"
 source = f"https://github.com/bytecodealliance/wasmtime/releases/download/v{pkgver}/wasmtime-v{pkgver}-src.tar.gz"
-sha256 = "7f58f9a5b398ed6d8ef3682e60729320e2cc671da387e8f97de8dc021e154a64"
+sha256 = "b4921316900ac37611407557dc4dc2a284c38ca28f5ad1c2aea91245420feb32"
 # wast tests take like an hour
 options = ["!check"]
 
@@ -63,6 +64,7 @@ def install(self):
 
 @subpackage("wasmtime-libs")
 def _(self):
+    self.provides = [f"so:libwasmtime.so=0"]
     return ["usr/lib/libwasmtime.so"]
 
 
