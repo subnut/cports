@@ -1,0 +1,22 @@
+diff --git a/crates/cli/src/main.rs b/crates/cli/src/main.rs
+index 505e05a..6897844 100644
+--- a/crates/cli/src/main.rs
++++ b/crates/cli/src/main.rs
+@@ -662,16 +662,7 @@ pub fn detect(path: Option<&Path>) -> anyhow::Result<impl InstalledApp> {
+             let path = if let Some(path) = path {
+                 path.to_path_buf().canonicalize()?
+             } else {
+-                let cli = env::current_exe()?;
+-                let dir = cli.parent().context("no parent path for cli")?;
+-
+-                // libexec is the standard, lib/gram is for Arch (and other non-libexec distros),
+-                // ./gram is for the target directory in development builds.
+-                let possible_locations = ["../libexec/gram-editor", "../lib/gram/gram-editor", "./gram"];
+-                possible_locations
+-                    .iter()
+-                    .find_map(|p| dir.join(p).canonicalize().ok().filter(|path| path != &cli))
+-                    .with_context(|| format!("could not find any of: {}", possible_locations.join(", ")))?
++                PathBuf::from("/usr/lib/gram-editor")
+             };
+ 
+             Ok(App(path))

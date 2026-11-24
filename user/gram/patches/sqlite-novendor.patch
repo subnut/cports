@@ -1,0 +1,13 @@
+diff --git a/Cargo.toml b/Cargo.toml
+index 3ff79cf..7c0cf19 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -359,7 +359,7 @@ jupyter-protocol = "2.0.3"
+ jupyter-websocket-client = "2.0.0"
+ jupyter-zmq-client = { version = "1.0.1", features = ["ring", "tokio-runtime"] }
+ libc = "0.2.191"
+-libsqlite3-sys = { version = "0.37.0", features = ["bundled", "min_sqlite_version_3_34_1"] }
++libsqlite3-sys = { version = "0.37.0", features = ["min_sqlite_version_3_34_1"] }
+ linkify = "0.11.0"
+ log = { version = "0.4.35", features = ["kv_unstable_serde", "serde"] }
+ lru = "0.18.5"
